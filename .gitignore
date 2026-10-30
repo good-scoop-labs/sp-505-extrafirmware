@@ -1,0 +1,11 @@
+# Never commit firmware images or ROM dumps (BOSS/Roland code)
+*.prg
+*.PRG
+*.SP0
+*.bin
+rom_dump/
+out/
+official/
+# Python
+__pycache__/
+*.pyc

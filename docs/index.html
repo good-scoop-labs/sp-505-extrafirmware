@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SP-505 EXTRAfirmware Patcher</title>
+<meta name="description" content="Turn the official BOSS SP-505 v1.02 system update into SP-505 EXTRAfirmware, in your browser.">
+<style>
+  :root {
+    --bg: #f4f2ee; --card: #ffffff; --ink: #1d1c1a; --muted: #6b6760; --line: #dedad3;
+    --accent: #c4351e; --accent-ink: #ffffff; --ok: #1f7a46; --ok-bg: #e7f4ec; --err: #b3261e;
+    --err-bg: #fbe9e7; --drop: #faf9f6; --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #161514; --card: #201f1d; --ink: #ece9e4; --muted: #a29d95; --line: #3a3834;
+      --accent: #e0563e; --accent-ink: #ffffff; --ok: #5fc58a; --ok-bg: #18301f; --err: #ff8a80;
+      --err-bg: #3a1d1a; --drop: #1b1a18;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #161514; --card: #201f1d; --ink: #ece9e4; --muted: #a29d95; --line: #3a3834;
+    --accent: #e0563e; --accent-ink: #ffffff; --ok: #5fc58a; --ok-bg: #18301f; --err: #ff8a80;
+    --err-bg: #3a1d1a; --drop: #1b1a18;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 680px; margin: 0 auto; padding: 40px 16px 64px; }
+  header h1 { font-size: 1.9rem; line-height: 1.2; margin: 0 0 6px; letter-spacing: -0.01em; }
+  header p { margin: 0; color: var(--muted); }
+  .badge { display: inline-block; font: 600 0.75rem/1 var(--mono); padding: 5px 8px; border-radius: 4px;
+    background: var(--ink); color: var(--bg); margin-bottom: 14px; letter-spacing: 0.04em; }
+  ol.steps { list-style: none; padding: 0; margin: 32px 0 0; counter-reset: s; }
+  ol.steps > li { counter-increment: s; background: var(--card); border: 1px solid var(--line);
+    border-radius: 10px; padding: 20px 20px 20px 64px; margin-bottom: 14px; position: relative; }
+  ol.steps > li::before { content: counter(s); position: absolute; left: 20px; top: 18px; width: 28px; height: 28px;
+    border-radius: 50%; background: var(--accent); color: var(--accent-ink); font-weight: 700;
+    display: grid; place-items: center; font-size: 0.9rem; }
+  h2 { font-size: 1.05rem; margin: 2px 0 6px; }
+  li p { margin: 0 0 8px; }
+  a { color: var(--accent); }
+  code, .mono { font-family: var(--mono); font-size: 0.9em; }
+  .drop { display: block; position: relative; margin-top: 10px; border: 2px dashed var(--line); border-radius: 8px;
+    background: var(--drop); padding: 22px 14px; text-align: center; cursor: pointer;
+    transition: border-color .15s, background .15s; }
+  .drop:hover, .drop.over { border-color: var(--accent); }
+  .drop:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .drop input { position: absolute; left: 0; top: 0; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
+  .drop strong { display: block; }
+  .drop span { color: var(--muted); font-size: 0.9rem; }
+  .status { margin-top: 12px; padding: 10px 12px; border-radius: 6px; font-size: 0.95rem; display: none; }
+  .status.ok { display: block; background: var(--ok-bg); color: var(--ok); }
+  .status.err { display: block; background: var(--err-bg); color: var(--err); }
+  .status.busy { display: block; background: var(--drop); color: var(--muted); }
+  button.dl { appearance: none; border: 0; border-radius: 8px; background: var(--accent); color: var(--accent-ink);
+    font: 600 1rem system-ui, sans-serif; padding: 12px 18px; cursor: pointer; margin-top: 4px; }
+  button.dl:disabled { background: var(--line); color: var(--muted); cursor: not-allowed; }
+  .expect { margin-top: 12px; font-family: var(--mono); font-size: 0.9rem; background: var(--drop);
+    border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; }
+  ul.tight { margin: 6px 0 0; padding-left: 20px; }
+  footer { margin-top: 32px; color: var(--muted); font-size: 0.85rem; }
+  @media (max-width: 480px) { ol.steps > li { padding: 18px 16px 18px 56px; } ol.steps > li::before { left: 14px; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="badge" id="rel">SP-505 EXTRAFIRMWARE</div>
+    <h1>SP-505 EXTRAfirmware patcher</h1>
+    <p>Turns the official BOSS SP-505 v1.02 system update into SP-505 EXTRAfirmware. Everything
+       runs in your browser: your file isn't uploaded anywhere.</p>
+  </header>
+
+  <ol class="steps">
+    <li>
+      <h2>Get the official update</h2>
+      <p>On the <a href="https://www.boss.info/us/support/by_product/sp-505/" rel="noopener">BOSS SP-505
+         support page</a>, download <strong>SP-505 System Update v1.02 SmartMedia</strong> (PC or Mac)
+         and unzip it. It contains <code>sp505.prg</code> and <code>SMPINFO0.SP0</code>.</p>
+    </li>
+    <li>
+      <h2>Choose the official <code>sp505.prg</code></h2>
+      <label class="drop" id="drop">
+        <input type="file" id="file" accept=".prg,.PRG">
+        <strong>Drop sp505.prg here</strong>
+        <span>or click to choose it</span>
+      </label>
+      <div class="status" id="status" role="status" aria-live="polite"></div>
+    </li>
+    <li>
+      <h2>Download EXTRAfirmware</h2>
+      <p>Saves a new <code>sp505.prg</code>. Its contents are checked against the released build first.</p>
+      <button class="dl" id="dl" disabled>Download sp505.prg</button>
+      <div class="expect" id="expect"></div>
+    </li>
+    <li>
+      <h2>Install it on the SP-505</h2>
+      <ul class="tight">
+        <li>Copy the new <code>sp505.prg</code> and the official <code>SMPINFO0.SP0</code> to a SmartMedia card,
+            where the BOSS instructions put them.</li>
+        <li>With the card inserted, hold <strong>SONG + PTN + BPM</strong> while turning the power on, and follow the
+            display. Don't switch off while it writes.</li>
+        <li>Check: hold <strong>EXIT + ENTER</strong> at power-on to see the version screen.</li>
+      </ul>
+      <p style="margin-top:10px">Full instructions, going back to stock and the user guide:
+         <a href="INSTALL.html">Install guide</a> · <a href="USER_GUIDE.html">User guide</a> ·
+         <a href="TROUBLESHOOTING.html">Troubleshooting</a></p>
+    </li>
+  </ol>
+
+  <footer>
+    Unofficial; not affiliated with BOSS / Roland. Updating firmware carries the usual risk: don't cut the power
+    while the SP-505 writes. This page contains only the EXTRAfirmware changes, not BOSS code. BOSS and SP-505 are
+    trademarks of Roland Corporation.
+  </footer>
+</main>
+
+<script src="extrafirmware-patch.js"></script>
+<script>
+(function () {
+  'use strict';
+  var P = window.EXTRAFIRMWARE_PATCH;
+  var $ = function (id) { return document.getElementById(id); };
+  var status = $('status'), dl = $('dl'), result = null;
+
+  if (!P) { show('err', 'The patch data (extrafirmware-patch.js) did not load. Reload the page.'); return; }
+  $('rel').textContent = 'SP-505 EXTRAFIRMWARE ' + P.release;
+  $('expect').textContent = 'Version screen after updating (EXIT + ENTER at power-on): version ' + P.versionScreen + ', SYS checksum ' + P.checksum;
+
+  function show(kind, text) { status.className = 'status ' + kind; status.textContent = text; }
+  function hex(buf) {
+    var a = new Uint8Array(buf), s = '';
+    for (var i = 0; i < a.length; i++) s += (a[i] < 16 ? '0' : '') + a[i].toString(16);
+    return s;
+  }
+
+  // SHA-256: Web Crypto when available, otherwise a small fallback (e.g. pages opened from disk)
+  function sha256(bytes) {
+    if (window.crypto && crypto.subtle && crypto.subtle.digest) {
+      return crypto.subtle.digest('SHA-256', bytes).then(hex);
+    }
+    return Promise.resolve(sha256js(bytes));
+  }
+  function sha256js(m) {
+    var K = [], H = [0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19];
+    var n = 2, c = 0;
+    while (c < 64) { var p = true; for (var f = 2; f * f <= n; f++) if (n % f === 0) { p = false; break; }
+      if (p) { K[c++] = (Math.pow(n, 1 / 3) * 4294967296) | 0; } n++; }
+    var l = m.length, bl = ((l + 9 + 63) >> 6) << 6, b = new Uint8Array(bl);
+    b.set(m); b[l] = 0x80;
+    var bits = l * 8, dv = new DataView(b.buffer);
+    dv.setUint32(bl - 4, bits >>> 0); dv.setUint32(bl - 8, Math.floor(bits / 4294967296));
+    var w = new Int32Array(64);
+    for (var o = 0; o < bl; o += 64) {
+      for (var i = 0; i < 16; i++) w[i] = dv.getInt32(o + i * 4);
+      for (i = 16; i < 64; i++) {
+        var x = w[i - 15], y = w[i - 2];
+        var s0 = ((x >>> 7) | (x << 25)) ^ ((x >>> 18) | (x << 14)) ^ (x >>> 3);
+        var s1 = ((y >>> 17) | (y << 15)) ^ ((y >>> 19) | (y << 13)) ^ (y >>> 10);
+        w[i] = (w[i - 16] + s0 + w[i - 7] + s1) | 0;
+      }
+      var a = H[0], bb = H[1], cc = H[2], d = H[3], e = H[4], ff = H[5], g = H[6], h = H[7];
+      for (i = 0; i < 64; i++) {
+        var S1 = ((e >>> 6) | (e << 26)) ^ ((e >>> 11) | (e << 21)) ^ ((e >>> 25) | (e << 7));
+        var t1 = (h + S1 + ((e & ff) ^ (~e & g)) + K[i] + w[i]) | 0;
+        var S0 = ((a >>> 2) | (a << 30)) ^ ((a >>> 13) | (a << 19)) ^ ((a >>> 22) | (a << 10));
+        var t2 = (S0 + ((a & bb) ^ (a & cc) ^ (bb & cc))) | 0;
+        h = g; g = ff; ff = e; e = (d + t1) | 0; d = cc; cc = bb; bb = a; a = (t1 + t2) | 0;
+      }
+      H = [(H[0] + a) | 0, (H[1] + bb) | 0, (H[2] + cc) | 0, (H[3] + d) | 0, (H[4] + e) | 0, (H[5] + ff) | 0, (H[6] + g) | 0, (H[7] + h) | 0];
+    }
+    var out = '';
+    for (i = 0; i < 8; i++) out += ('00000000' + (H[i] >>> 0).toString(16)).slice(-8);
+    return out;
+  }
+
+  function headerVersion(bytes) {
+    var s = '';
+    for (var i = 0; i < 0x30 && i < bytes.length; i++) s += bytes[i] >= 32 && bytes[i] < 127 ? String.fromCharCode(bytes[i]) : '|';
+    return s.split('|').filter(Boolean).slice(0, 2).join(' ');
+  }
+
+  function handle(file) {
+    result = null; dl.disabled = true;
+    if (!file) return;
+    show('busy', 'Checking ' + file.name + ' …');
+    file.arrayBuffer().then(function (buf) {
+      var bytes = new Uint8Array(buf);
+      if (bytes[0] === 0x50 && bytes[1] === 0x4b) {
+        throw new Error('That is a zip file. Unzip the BOSS download first, then choose the sp505.prg inside it.');
+      }
+      return sha256(bytes).then(function (h) {
+        if (h === P.outputSha256) throw new Error('This file is already EXTRAfirmware ' + P.release + '. Use the official v1.02 file.');
+        if (h !== P.inputSha256) {
+          var v = headerVersion(bytes);
+          throw new Error('This isn’t the official SP-505 v1.02 sp505.prg' +
+            (v.indexOf('BOSS SP505') === 0 ? ' (the file says: ' + v + ')' : '') +
+            '. Use the unmodified file from the BOSS download.');
+        }
+        var outb = new Uint8Array(bytes);
+        P.runs.forEach(function (r) {
+          var bin = atob(r[1]);
+          for (var i = 0; i < bin.length; i++) outb[r[0] + i] = bin.charCodeAt(i);
+        });
+        return sha256(outb).then(function (h2) {
+          if (h2 !== P.outputSha256) throw new Error('Internal check failed: the result doesn’t match the released build. Nothing to download.');
+          result = outb; dl.disabled = false;
+          show('ok', 'Official v1.02 file recognised. EXTRAfirmware ' + P.release + ' is ready to download.');
+        });
+      });
+    }).catch(function (e) { show('err', e.message || String(e)); });
+  }
+
+  $('file').addEventListener('change', function (e) { handle(e.target.files[0]); });
+  var drop = $('drop');
+  ['dragenter', 'dragover'].forEach(function (t) { drop.addEventListener(t, function (e) { e.preventDefault(); drop.classList.add('over'); }); });
+  ['dragleave', 'drop'].forEach(function (t) { drop.addEventListener(t, function (e) { e.preventDefault(); drop.classList.remove('over'); }); });
+  drop.addEventListener('drop', function (e) { if (e.dataTransfer.files.length) handle(e.dataTransfer.files[0]); });
+
+  dl.addEventListener('click', function () {
+    if (!result) return;
+    var url = URL.createObjectURL(new Blob([result], { type: 'application/octet-stream' }));
+    var a = document.createElement('a'); a.href = url; a.download = 'sp505.prg';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+  });
+})();
+</script>
+</body>
+</html>
