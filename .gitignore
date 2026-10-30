@@ -6,6 +6,8 @@
 rom_dump/
 out/
 official/
+# IDE
+.idea/
 # Python
 __pycache__/
 *.pyc

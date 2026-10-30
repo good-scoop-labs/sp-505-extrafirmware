@@ -1,5 +1,8 @@
 # Development
 
+For where the project stands (confirmed on hardware, still to test, ideas not pursued) see
+[STATUS.md](STATUS.md).
+
 ## Repository layout
 
 ```

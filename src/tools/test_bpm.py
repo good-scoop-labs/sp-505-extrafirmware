@@ -95,9 +95,9 @@ def main():
     # labels: rebuild in memory (main() records them)
     import tempfile
     here = os.path.dirname(os.path.abspath(__file__))
+    official = os.path.join(here, '..', '..', 'official', 'sp505.prg')
     base = (sys.argv[3] if len(sys.argv) > 3 else os.environ.get('SP505_V102') or
-            next((p for p in (os.path.join(here, '..', 'build_stock_v102_for_comparison', 'sp505.prg'),
-                              os.path.join(here, '..', '..', 'official', 'sp505.prg')) if os.path.isfile(p)), None))
+            (official if os.path.isfile(official) else None))
     if not base:
         sys.exit('need the official v1.02 sp505.prg (3rd argument or $SP505_V102)')
     tmp = tempfile.mktemp(suffix='.prg')
