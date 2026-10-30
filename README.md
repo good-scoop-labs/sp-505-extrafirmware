@@ -25,7 +25,7 @@ SP-505's normal card update.
 Two ways to do that, with identical results:
 
 - **In the browser (easiest):** open the web patcher (this repository's GitHub Pages site,
-  `docs/index.html`) and drop the official `sp505.prg` onto it. Nothing is uploaded; it all runs
+  `https://good-scoop-labs.github.io/sp-505-extrafirmware/`) and drop the official `sp505.prg` onto it. Nothing is uploaded; it all runs
   locally in the page.
 - **With Python:**
   ```
