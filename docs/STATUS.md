@@ -28,6 +28,50 @@ Passes the emulator tests, not yet confirmed on an SP-505:
 - [ ] Resample (Auto) with two Long varispeed loops: neither is cut.
 - [ ] Menus / effect switching while varispeed loops play (engine trimmed by 5-14%).
 
+### Mark button (test build 2.1g)
+
+Passes the emulator tests (`test_mark.py`), not yet tried on an SP-505:
+
+- [ ] Version screen: version 2.1g, SYS checksum FA9FB088.
+- [ ] (2.1g) MARK shows steady for samples trimmed in WAVE EDIT (START or END), and not for
+      untrimmed ones, freshly recorded samples included; [L/R] on a trimmed sample clears it.
+      After START + stop: MARK goes steady.
+- [ ] (2.1e, hardware) END press didn't restart at all (played to the sample's end before looping
+      the marks): the restart note was posted to the wrong queue. 2.1f posts it into the audio
+      task's ring. Check the immediate restart, and that no audio past END is heard.
+- [ ] (2.1d, hardware) after a START press, stopping the sample left MARK flashing; 2.1e stops
+      the flashing when the sample stops (START kept, old END). Check gate pads (release), loops
+      stopped with the pad / STOP, one-shots running to their end.
+- [ ] (2.1d, hardware) a little audio past the END before the restart; 2.1e sends the restart
+      straight to the audio task. Check the loop point is clean; the restart level matches the hit.
+- [ ] (2.1c, hardware) random distortion and level changes during playback. 2.1d removes the
+      END press's direct fade request (it bypassed the voice allocator); check playback after
+      many marks / clears, with loops and other pads playing. If it remains, compare with 2.0.0.
+- [ ] MARK flashes after the START press, is steady after the END press, disappears after a
+      clear; flashing rate is comfortable (assumed 1 ms ticks: about twice a second).
+- [ ] (2.1b, hardware) END press: the note kept playing to the original end before looping the
+      marked range. 2.1c restarts it at the END press: check a loop now loops the marked part at
+      once, a one-shot plays it once, at the same level as a pad hit, without a click or a double
+      note; also with Gate pad play while holding the pad, and with a varispeed sample.
+- [ ] PATTERN PLAY / SONG PLAY: hit a pad, press [L/R] during playback (MARK flashes), press
+      again later (MARK steady); the next hit plays from the first press to the second.
+      WAVE EDIT shows the same points.
+- [ ] Press [L/R] on the marked sample: MARK disappears, the whole sample plays again.
+- [ ] Hold [L/R], hit the pad: the note plays from the very beginning, MARK flashes; release,
+      press at the end point -> MARK.
+- [ ] The tag follows the last pressed pad (marked pad -> MARK, other pad -> nothing), survives
+      leaving and re-entering the screen, and doesn't disturb the rest of the PAD BANK line
+      (try a PITCH / CHOP / CARD bank). Check it stays after the screen updates itself (pattern
+      running, tempo changes).
+- [ ] The marked point is where you heard it (no noticeable lag), Standard / Long / lowest grade.
+- [ ] Looping sample, Gate pad play (release before pressing [L/R] -> nothing), stereo sample,
+      varispeed sample, Phrase play type, a pattern playing the pad.
+- [ ] WAVE EDIT and the sample parameter screen: [L/R] + ZOOM still changes the vertical zoom, no
+      mark is made; holding L/R there and hitting a pad changes nothing.
+- [ ] A WAVE EDIT change of START / END on a marked sample removes MARK.
+- [ ] Marked state after saving and a power cycle; a CLIPBOARD copy of a marked sample.
+- [ ] Protected bank -> "Protected!"; the BPM shown afterwards matches WAVE EDIT's.
+
 ## Known limitations
 
 - Reverse playback ignores varispeed.

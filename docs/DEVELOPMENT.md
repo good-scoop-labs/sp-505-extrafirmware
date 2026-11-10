@@ -16,6 +16,7 @@ src/
                          pad set-up and parameter-handler hooks
   voices.py              polyphony weighting (pad voice allocator)
   bpm.py                 BPM rule and Play Type rules (value edit, setter, header line)
+  mark.py                Mark button: [L/R] sets START / END of the playing sample (key class 3)
   v850asm.py             small V850E assembler used by the modules above
   sp505fw.py             .prg container: load / verify / fix checksums (also a small CLI)
   tools/                 V850 disassembler and emulator, the test suite, the web-patch generator
@@ -69,6 +70,7 @@ cd src/tools
 ./regress.sh ../../out/sp505.prg extrafirmware   # 40 checks, all must print "ok"
 MULTI=1 python3 fuzz.py ../../out/sp505.prg extrafirmware 3000 1
 python3 test_bpm.py ../../out/sp505.prg extrafirmware ../../official/sp505.prg
+python3 test_mark.py ../../out/sp505.prg extrafirmware ../../official/sp505.prg
 ```
 
 What `regress.sh` covers:
@@ -86,6 +88,15 @@ left patched, that POST returns correctly and that the note limits hold.
 `test_bpm.py` runs the UI-side BPM code (the edit wrapper, the setter wrapper and the header
 repair) with the real getter and natural-BPM routine, in both message orders, and compares the
 BPM rule with a Python model for every setting.
+
+`test_mark.py` sends key events through the stock UI dispatcher (0x1A042C) and checks the Mark
+button: START / END from the play position (exact for all three grades), the stock commits with
+Measure / BPM, the START / END / clear cycle and 193-step rules, what counts as marked (START or
+END not at the recording's edges, however set), hold-L/R-and-pad, voice choice,
+protect / reverse / no-sample cases, and that L/R on the waveform screens, ZOOM keys and release /
+repeat events go to the stock handler or do nothing. It renders PATTERN PLAY / SONG PLAY in the
+emulator's framebuffer and compares them with the stock firmware's render of the same RAM state:
+only the tag box may differ.
 
 Other tools: `test_speed.py` (accuracy at a setting), `prof30.py` (flash halfwords fetched per
 block, the main cost metric, with a hot-spot list),

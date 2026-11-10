@@ -3,6 +3,23 @@
 Versions follow [semantic versioning](https://semver.org/). The SP-505's version screen (hold
 EXIT + ENTER at power-on) shows the version and SYS checksum listed for each release.
 
+## Unreleased (test build `2.1g`)
+
+Version screen: version `2.1g`, SYS checksum `FA9FB088`. Not yet tested on hardware.
+
+### Added
+- **Mark button** on [L/R], like the Mark button of an SP-303: while the last pressed pad's sample
+  plays, the first press sets its START and the second its END at the point you hear; the END
+  press restarts playback from the new START at once (a loop then loops the marked part). Holding
+  [L/R] while hitting the pad starts the mark at the beginning of the sample. Pressing [L/R] on a
+  marked sample clears the marks (START / END back to the whole sample).
+- The PATTERN PLAY and SONG PLAY screens show **MARK**, steady whenever the sample's START or END
+  differs from the whole recording (however it was set, WAVE EDIT included; [L/R] then clears it)
+  and flashing
+  while the END is still to be set (it stops flashing when the sample stops before the END), like the SP-303's Mark button (the SP-505 has no light in the
+  [L/R] button).
+- [L/R] keeps its vertical-zoom function in WAVE EDIT and on the sample screens with a waveform.
+
 ## 2.0.0 (2026-10-29)
 
 Version screen: version `2.00`, SYS checksum `FA9AD007`. Built from the official v1.02 system

@@ -105,6 +105,68 @@ available again.
   can be a varispeed note.
 - Samples with both settings at 0 are never affected by these limits.
 
+## Mark button ([L/R])
+
+The **[L/R]** button next to the display works like the Mark button of an SP-303: it marks a
+sample's start and end while it plays, and clears the marks again.
+
+**Marking**
+
+1. Hit a pad. While it plays, press **[L/R]**: the sample's **START** is set to the point you're
+   hearing.
+2. Press **[L/R]** again later in the sample: its **END** is set there, and playback jumps
+   straight back to the new START, like on an SP-303. A looping sample now loops the marked part;
+   a one-shot sample plays the marked part once. The sample is now **marked**.
+
+To start at the very beginning of the sample, **hold [L/R] and then hit the pad**: START is set to
+the beginning and the sample plays from there. Let go of [L/R], then press it where the sample
+should end.
+
+**Clearing:** press **[L/R]** when the last pad you pressed has a marked sample (steady MARK).
+START and END go back to the whole sample. This works whether or not the sample is playing. The
+next press marks a new START.
+
+**What the display shows:** the SP-505 has no light in the [L/R] button. Instead, the PATTERN
+PLAY and SONG PLAY screens show the state of the last pad you pressed at the right end of the
+PAD BANK line:
+
+| Display | Meaning |
+|---|---|
+| **MARK** steady (white on black) | the sample's START or END isn't at the edge of the recording, however it was set (Mark, WAVE EDIT, a copy); the next press clears them |
+| **MARK** flashing | a START was just set with [L/R]; the next press sets END |
+| nothing | the sample plays in full; the next press sets START |
+
+If you set a START and then the sample stops before you set an END, MARK stops flashing, as on
+the SP-303: the sample keeps the new START and its previous END, so MARK then shows steady (and
+the next press clears).
+
+Details:
+
+- Marks are for the **last pad you pressed** (the pad the sample menus show). Setting START or
+  END needs the sample to be playing; pressing [L/R] when it isn't playing (and isn't marked)
+  does nothing.
+- The first press (START) doesn't interrupt the playing sample. The second press (END) restarts
+  it from the new START at once, at the level of your pad hit. The restart happens inside the
+  SP-505: it isn't sent to MIDI OUT and isn't recorded into a pattern.
+- START and END are the same points WAVE EDIT shows and edits. The sample data isn't changed, so
+  you can always move them back in WAVE EDIT. The BPM and Measure are recalculated as for a WAVE
+  EDIT change (and the BPM still follows Varispeed / Fine Tune).
+- "Marked" simply means START or END differs from the whole recording, so MARK also shows for a
+  sample trimmed in WAVE EDIT, and [L/R] clears that trim too (as it would on an SP-303, where a
+  lit MARK means the next press clears it). A CLIPBOARD copy of a trimmed sample shows MARK as
+  well.
+- Like WAVE EDIT, marks keep START and END at least about 70 ms apart (193 steps). An END press
+  that would be before that (for example right after hitting the pad again) moves START instead,
+  and the next press is the END again. A START press too close to END is ignored.
+- Hitting a different pad starts over with START for that pad.
+- On a protected bank the SP-505 shows "Protected!" and nothing changes (the same protect check
+  the SP-505's own edits use). The preset banks are protected, so they never show the tag.
+- Reverse samples aren't marked (a marked sample that is later set to Reverse can still be
+  cleared).
+- **In WAVE EDIT and on the sample screens with a waveform, [L/R] keeps its normal function**
+  (hold it and use ZOOM IN / OUT for the vertical zoom). It only marks on screens where it isn't
+  used for anything else.
+
 ## Limitations
 
 - **Reverse:** a sample with Reverse on plays at normal speed. Varispeed isn't applied to reverse

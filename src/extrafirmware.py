@@ -5,6 +5,7 @@
     engine.py   the varispeed engine (audio-block hook), pad set-up, parameter handler
     voices.py   polyphony weighting (pad voice allocator)
     bpm.py      BPM rule, Play Type rules (value edit, parameter setter, header line)
+    mark.py     Mark button: [L/R] sets START / END of the playing sample
     layout.py   every address used: stock firmware locations, EXTRAfirmware flash and RAM
 
 usage: extrafirmware.py official_v102.prg out.prg
@@ -14,9 +15,9 @@ here = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, here)
 import sp505fw as fw
 import layout as L
-import menu, engine, voices, bpm
+import menu, engine, voices, bpm, mark
 
-SYSTEM_VERSION = b'2.00'            # shown on the EXIT+ENTER screen, exactly 4 characters
+SYSTEM_VERSION = b'2.1g'            # shown on the EXIT+ENTER screen, exactly 4 characters
 VERSION = b'EXT Ver.' + SYSTEM_VERSION     # internal test screen text, 12 characters
 assert len(SYSTEM_VERSION) == 4
 
@@ -29,6 +30,7 @@ def build(inp, out):
     labels = engine.install(d)
     voices.install(d)
     labels.update(bpm.install(d))
+    labels.update(mark.install(d))
     fw.put(d, L.SYSTEM_VERSION, SYSTEM_VERSION, L.STOCK_SYSTEM_VERSION)
     fw.put(d, L.VERSION_TEXT, VERSION, L.STOCK_VERSION)
     fw.fix(d)

@@ -199,7 +199,7 @@ class CPU:
                     else: self.m.w(a, 2, R[r2])
                 elif op in (0x3c, 0x3d):
                     if w2 & 1:
-                        if r2 == 0 and op == 0x3c:   # prepare
+                        if r2 == 0:     # prepare (op 0x3d: imm5 bit 4 set, stack >= 64 bytes)
                             imm = (w >> 1) & 0x1f; lst = ((w & 1) << 11) | (w2 >> 5)
                             sub = (w2 >> 1) & 0xf
                             regs = self._list(lst)
@@ -265,6 +265,14 @@ class CPU:
                                 if w2 & 2: q, rem = n // d, n % d
                                 else:
                                     q = int(s32(n) / s32(d)); rem = s32(n) - q * s32(d)
+                                self.setr(r2, self.zs(q)); self.setr(r3, rem); self.ov = 0
+                        elif x == 0x280:        # divh / divhu reg1, reg2, reg3 (lower halfword of reg1)
+                            d = R[r1] & 0xFFFF; n = R[r2]
+                            if not w2 & 2: d = sx(d, 16)
+                            if d:
+                                if w2 & 2: q, rem = n // d, n % d
+                                else:
+                                    q = int(s32(n) / d); rem = s32(n) - q * d
                                 self.setr(r2, self.zs(q)); self.setr(r3, rem); self.ov = 0
                         elif x == 0x320:
                             c = (w2 >> 1) & 0xf

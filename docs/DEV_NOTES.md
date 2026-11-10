@@ -744,3 +744,186 @@ updater (0x17534) display the same bytes. "EXT Ver.1.02" at 0x138AAB belongs to 
 screen (0x1CAC5C). The ROM's boot check (0x158B4) compares only the 10 bytes "BOSS SP505" at
 0x100010, so the 4 version bytes can change: they now read "2.00". The .prg file header (outside
 the image) is left as the official one.
+
+## Mark button (branch add-mark-button, test build 2.1a, mark.py)
+Goal: SP-303-style Mark on [L/R]: while the last pressed pad plays, 1st press = START, 2nd = END.
+UI key path (found from the panel test mode's key table 0x138E60, {u32 LED/x/y, char *name} x 61,
+index = key code: L/R 21, ZOOM IN 19, ZOOM OUT 20, ENTER 22, EXIT 23, PAD 1-16 29-44):
+- Key event {+0 type 0, +4 key code (byte), +8 state 0 released / 1 pressed / 2 repeat}.
+- UI dispatcher 0x1A042C(screen index, event): screen = table 0x120590[i] (62 descriptors {id,
+  handler slots}); type switch; for keys (type 0), UI mode gp+0x10000-17800 <= 4 sends the event
+  only to the screen's slot +40, otherwise 0x1A065A: handler = 0x120560[0x12046C[key]](screen,
+  event). Key class 3 = ZOOM IN / ZOOM OUT / L/R -> 0x19BDF8, which calls slot +28 if non-null.
+- Slot +28 handlers: 0x186CF4 (WAVE EDIT) and 0x1A4FE8 (screens 28 / 29, sample screens with a
+  waveform) use L/R through 0x181CE4: L/R state -> gp-17580 (held), ZOOM then changes the vertical
+  zoom (0x1A5C70) instead of horizontal (0x1A5CE0). 0x1A4E38 (default, main screens), 0x18AB98,
+  0x1919C0, 0x190998 only act on 19 / 20. So L/R was inert everywhere else.
+- Mode table 0x120838: mode 6 and 14-21 go to screen 1 (0x180750(n) = show screen n).
+Sample / position facts:
+- Last pressed pad: system params 184 (pad, class 9 byte gp+14824) and 185 (bank, gp+14825), set
+  by the pad handler 0x19BAD0; sample = 0x1A6B94(pad, bank) = bank*16 + pad (pad 16 -> 512).
+- START = param 39 (record +0x08), END = 40 (+0x0C), 37 / 38 the wave's own range, 42 a third
+  point. Positions <-> bytes: 0x15C364(sample, bytes) / 0x15C2E4(sample, position).
+- Pad set-up (0x1B9FF8 loop) stores pad record (gp+0x20000-720 + 156*sample) +80 / +84 / +88 =
+  positions of 39 / 40 / 42, +100 / +104 the raw values; the audio task's parameter handler
+  0x1BA884 updates them for ids 39 / 40 (0x1BB06C / 0x1BB212), no reload.
+- Note start 0x1B6EBC: voice +28 = pad record +80, +32 = +84, +24 = +28 + start offset
+  (gp+0x10000-9816 + 4v, normally 0); +137 = 1 / 2 / 4 per rate code. The ROM adds +137 to +24 per
+  chunk and loops back to +28. So voice +24 is the play position in START / END position units.
+- Stock commits: 0x1A3BB0(sample, position) START, 0x1A3B14 END (param, Measure halved / doubled
+  until BPM fits, 44 / 45, project changed 0x19E4AC). Their WAVE EDIT wrappers 0x1A5724 / 0x1A56D4
+  check the 193-step minimum against the edit context gp-14692 (0x1A6330), so Mark does its own
+  check with 0x1A5758 / 0x1A5708 (START / END of a sample as positions).
+- Protect: 0x196710(bank) (param 8 bits; param 8 values below its min 15 read as the default 15,
+  i.e. banks 0-3 protected) -> stock answer is error 13 via 0x1A16C0 ("ERROR!!! Protected!";
+  message table 0x11FA34, 12 bytes per entry).
+Build: data word 0x12056C (class 3 entry) 0x19BDF8 -> MARKKEY 0x1D6000 (block 13 free space;
+0x196 bytes). L/R on a screen whose slot +28 is 0x186CF4 / 0x1A4FE8, ZOOM keys and everything
+else -> 0x19BDF8 unchanged. L/R press elsewhere -> MARK: sample of the last pad; protected ->
+"Protected!"; reverse (param 52) -> nothing; voice = active and not 4022 / 4023 / 4026 / 4027,
+slot +10 == sample, +28 <= +24 < +32, smallest +24; state at RAM 0x429E00 {magic 'MARK',
+sample, next tap}; END tap needs position >= START + 193 (else it moves START), START tap needs
+position + 193 <= END; then redraw (0x17FDE8(-1)). Runs in the UI task like WAVE EDIT's own commits.
+Emulator: v850emu got divh / divhu (format XI 0x280, used by 0x15C364). tools/test_mark.py: 30
+checks through the real dispatcher, all ok; regress.sh 40/40, fuzz OK, test_bpm all ok; difffuzz vs
+2.0.0 identical (audio path untouched). "2.1a", checksum FA9BD53D. Blocks changed: 0 (version),
+2 (one table word), 3 (version text), 13. Blocks 12 and 14 untouched.
+
+## Test build 2.1b: SP-303-style clear, marked flag, LCD tag, hold-to-start
+User request: like the SP-303, a marked sample "lights" the button and pressing Mark again clears
+the marks; holding Mark before triggering the pad sets START to the beginning.
+- No LED behind L/R: the panel test table 0x138E60 ({u8 LED or 0xFF, u8 x, u8 y, -, char *name}
+  x 61; first reading in the 2.1a notes was one entry out of step) lists no LED for L/R or the ZOOM
+  keys. LED driver 0x1C81D8(led, state): state table gp-2268, hardware writer callback gp-2012
+  (0x1C500C). 0x180750(n) is a per-mode LED pattern (table 0x11B72C, 124 bytes each), not a screen.
+- Marked flag: only spare record byte is +0x2F (param 60; every other byte of the 48 belongs to a
+  parameter). Value 0x80 | hash7(START value, END value) (mark.flag_of); old internal builds
+  (v7-v19) wrote 0..127 there, never >= 0x80. Post-sampling init sets END through a direct
+  message (0x1C31EC), not the setter, so the hash (not only SETWRAP's clear) ends the mark when
+  the points change. SETWRAP clears the byte for setter calls with id 39 / 40.
+- Clear = WAVE EDIT's limits: 0x1A5790(s) = position of param 37 (data start), 0x1A5774(s) =
+  position of param 42 (data end; post-sampling init: 37 == 42 means empty, 0x1A6954).
+- LCD: 128 x 64, framebuffer 0x41625E (8 pages x 128 bytes, bit = row). Primitives: 0x154D64 clear,
+  0x154DF8(x1, y1, x2, y2, [sp] 0 white / 1 black) fill, 0x154DDC(x1, y1, x2, y2) invert,
+  0x155B48(x, y, font, string) text (font 0 = 6 px, 1 = 5 px, 2 = 7 px), 0x155E6C / 0x155EC4 text in
+  6 x 8 cells, 0x155960 number. The LCD routines take a lock at 8[ep] and write only the
+  framebuffer; the display is refreshed from it without a dirty flag.
+- Screens identified by rendering every descriptor's enter (+64) and draw (+68) slots in the
+  emulator (needs the v850emu prepare fix below; the play screens' sequencer request 0x17248C
+  blocks on another task and is stubbed): screen 3 = PATTERN PLAY (desc 0x11D36C), 6 = SONG PLAY
+  (0x11E224), 31 = DELETE SAMPLE, 1 = PAD BANK list, 2 Pad Accent, 9 Resolution, 12 Play BPM,
+  13 Sync BPM, 27 sample parameters, 34 pad assign, 37 LCD contrast, 51 a diagnostic. Current
+  screen: gp+0x10000-21728 (index), state table 0x11B308 (62 x 16), switch request 0x180204(n),
+  UI init 0x1A091C(n) sets mode 5. The play screens draw the PAD BANK box in their enter routine
+  (0x189C14 / 0x191038): "PAD BANK:" at (2, 49) font 1, number at 50, name[bank] (table 0x12A354)
+  at 65, frame (0, 47)-(127, 55). Longest non-preset name 7 characters -> ends at x 101; the tag
+  box is (104, 48)-(125, 54). Preset banks (0-3, protected, "PRESET n" reaches x 106) are skipped.
+- Tag redrawn after the play screens' enter / draw slots (descriptor words +64 / +68 -> wrappers),
+  after every pad key (class 6 table entry 0x120578 -> PADW) and after each mark press.
+- Hold: L/R press / release events (state 1 / 0, repeat 2 keeps it) -> MARK_RAM +12. PADW: pad
+  press (keys 29..44) while held, on a screen that doesn't use L/R: sample = bank * 16 + pad,
+  protect / reverse checks, START = data start committed before the stock pad handler 0x19BAD0
+  runs (the parameter message is queued ahead of the note start), next press = END.
+- v850emu: prepare with a frame >= 64 bytes (imm5 bit 4 in the opcode field, op 0x3D) wasn't
+  recognised and ran as ld.bu, leaving the frame unbuilt; fixed (r2 == 0 identifies prepare).
+- tools/test_mark.py: 75 checks; tag renders compared with the stock firmware's render of the same
+  RAM state (sync_ram), identical outside the tag box. "2.1b", checksum FA9E8E9A.
+
+## Test build 2.1c: END press restarts playback (SP-303 style)
+Hardware report (2.1b): after the END press the note kept playing to the end of its original range
+before looping the marked range (a voice takes START / END from the pad record at note start).
+- Pad notes: the panel task (0x1C54E8) sends pad hits as SENDNOTE 0x1C34F8(part 0, 0x90 / 0x80,
+  sample, velocity = gp+0x10000-15356, [sp] 0) -> 0x1C2680 -> the sequencer (0x172650), which passes
+  them on to the audio task (type 4 messages, status 0x90 -> note on 0x1BFA90, 0x80 / velocity 0 ->
+  note off 0x1BF9AC, 0xB0 120 -> all off 0x1BFE88; type 5 = parameter, 0x1BA884). The UI's preview
+  path is 0x1C330C -> 0x1C26FC -> 0x172614. Parameter messages (setter -> 0x1C284C) go straight to
+  the audio task, so a note sent after a commit always starts with the new range.
+- RETRIG (after the END commit): the sample's active voices get 4022 | 4028 (stock fade-out request,
+  as a voice steal / the engine's hand-over), set with interrupts disabled (the audio ISR writes
+  these bytes), then SENDNOTE as a pad hit. START presses and clears don't touch playback.
+- Open: the hold-L/R-then-pad START commit (PADW) runs in the UI task while the pad's own note goes
+  panel -> sequencer -> audio; if the sequencer task delivers before the UI task runs, that note
+  starts from the old START (only matters when START wasn't already the beginning).
+- tools/test_mark.py: 80 checks (note sent after the END commit with interrupts back on, fades only
+  the sample's voices, none for START / clear). "2.1c", checksum FA9EE4CD.
+
+## Test build 2.1d: no direct fade on retrigger, flashing MARK
+Hardware report (2.1c): random distortion and the level getting quieter / louder during playback;
+the ">END" / "MARK" tags hard to read.
+- Note-on 0x1BFA90 already cuts the sample's playing voices itself: per part a count table at
+  gp+0x30000+15188 + part*1028 + sample*2; non-zero -> 0x1BD184(part, sample, -1) (stop with the
+  allocator's lists) before the allocator 0x1BDCDC. 2.1c's RETRIG also set 4022 | 4028 on those
+  voices from the UI task, outside the allocator -> voices ending behind its back, then the stock
+  cut on voices already finishing; most likely the cause. 2.1d's RETRIG only sends the note.
+- Also seen: the parameter handler re-runs voice set-up (0x1BBFE0) on the sample's playing voices
+  after a START / END change (0x1BB14E..0x1BB1D2; time-stretch / BPM fields), as for a WAVE EDIT
+  edit while previewing. Stock behaviour, left as is; a suspect only if the distortion remains
+  (especially Phrase play type or varispeed samples, whose BPM changes with the marks).
+- Pad velocity gp+0x10000-15356 is the PAD ACCENT level (127 at start-up; written by the Pad Accent
+  screen), used by every panel note-on; so the retrigger level equals a pad hit.
+- Flashing tag: TAG draws MARK inverted in both states; for "START set, END due" it keeps the
+  tag's 22 framebuffer bytes (page 6, x 104..125, rows 48-54; bit 7 = the box line) in MARK_RAM
+  +0x20 and sets +16. The idle task's endless loop (engine.build_idle 'br .' at 0x1D1330) now jumps
+  to MIDLE: every 2^8 ticks (0x3FFE02C) it rewrites those bytes on / off, with interrupts off from
+  the checks (MARK_RAM magic, +16, current screen = a play screen) to the last byte. It calls no UI
+  or LCD code (the LCD lock 8[ep] is a spin lock: a low-priority holder would hang the UI). No
+  safe periodic UI event was found: the UI waits on its flag without a timeout, 0x17FD1C
+  dispatches synchronously and 0x17FDE8 writes the UI's ring without a lock.
+- SP-303 START semantics confirmed: a START press commits START at once; stopping playback then
+  leaves START = mark point, END = old END.
+- tools/test_mark.py: 95 checks (incl. the idle loop run in the emulator: off / on phases, other
+  screen, RAM not initialised). "2.1d", checksum FA9F3134.
+
+## Test build 2.1e: flashing stops when playback stops, restart straight to the audio task
+Hardware report (2.1d): sound fine. (1) After a START press, stopping the sample left MARK flashing
+(SP-303: it stops). (2) A little audio past the END played before the restart.
+- (2) 2.1d's restart went panel-style through the sequencer: SENDNOTE 0x1C34F8 -> 0x1C2680 builds an
+  8-byte event for the sequencer's mailbox (gp-18764, ROM 0x5288 via 0x172650, which doesn't
+  set_flg the sequencer; 0x172614, the UI variant, does), so the old note ran on until the
+  sequencer passed the note to the audio task. Audio task input: 0x1C284C routes messages; type 5
+  parameters (id < 307) go to a shadow table at gp+0x30000+22660 + set_flg(ep+64) (the audio
+  task, highest priority, runs at once), everything else to the ROM queue 0x1393C (the only caller
+  of 0x1393C; the audio task re-posts messages it can't take yet through 0x1C284C). 2.1e's RETRIG
+  posts {4, flags, part, 0x90, h sample, h velocity, h extra} through 0x1C284C right after the END
+  commit (before the flag / redraw work). Part / velocity / flags / extra are copied from the audio
+  task's last note-on record (gp+0x30000+22384: h extra, h sample, b part, b velocity, b flags,
+  written by 0x1BFA90) when it is this sample, else 0 / PAD ACCENT level / 1 / 0. Not seen by the
+  sequencer: no MIDI OUT, not recorded.
+- (1) The idle loop (MIDLE) also watches the "END due" state (MARK_RAM +8): +24 = the sample has
+  been seen playing (set by the START press; 0 for hold + pad, whose note may start later; set by
+  the loop when it sees a voice). Seen and no voice of the sample active (ep[4021], slot +10) ->
+  with interrupts off, after scanning again: +8 = 0 (next press START), +16 = 0, +24 = 0, and the
+  tag blanked if it was flashing on a play screen. START / END stay as committed.
+- tools/test_mark.py: 105 checks. "2.1e", checksum FAA00130.
+
+## Test build 2.1f: restart note into the audio task's ring
+Hardware report (2.1e): marks set correctly, but the END press no longer restarted playback (the
+note ran to the sample's end, then looped the marks).
+- 0x1C284C doesn't feed the audio task: type 5 (parameter) messages go to a shadow table and
+  wake task 0 (TCB ep+64, highest priority), which forwards them; other types go to ROM 0x1393C
+  (not the audio task). 2.1e's restart therefore never arrived.
+- The audio task reads a ring at gp+0x10000-12100 (128 x 16 bytes; read index -10052, write
+  -10048), written by 0x1B3394(message) (blocks while full, then set_flg ep+128 0x20000000 =
+  audio task, TCB 0x3FFE080). Task 0 (0x1C19xx-0x1C2xxx) and the UI's preview notes (0x1A16E0 /
+  0x1A1718: {4, 1, 4, 0x80 / 0x90, h 513, h 0 / 127, h 0}, used by the START / END editor) use it.
+  Dispatch: 0x1B19A8 copies an entry to sp+4; type 1 = commands (switch on byte 8), type 4 =
+  notes, type 5 = parameters (0x1B276C...).
+- RETRIG posts through 0x1B3394. The END commit's parameter message is already in the ring (task 0
+  runs at once on its flag), so the note follows it.
+- test_mark.py now also runs the real 0x1B3394 (ROM kernel calls stubbed) and checks the note in the
+  ring, which would have caught 2.1e. 106 checks. "2.1f", checksum FAA000DC.
+
+## Test build 2.1g: "marked" = START / END not the whole recording
+Hardware report (2.1f): restart works. Request: show MARK whenever START / END differ from the raw
+sample's start / end, also when set in WAVE EDIT (otherwise the display is misleading).
+- ISMARKED(s) = START position (0x1A5758) != data start (0x1A5790, param 37) or END position
+  (0x1A5708) != data end (0x1A5774, param 42). The record flag byte (+0x2F hash), FLAGV and
+  SETWRAP's clear for ids 39 / 40 are gone (bpm.py back to the 2.0.0 code).
+- Press order: END due (MARK_RAM +8) -> END press; else marked -> clear (so a WAVE EDIT trim is
+  cleared by L/R, consistent with a steady MARK); else START. TAG: END due -> flashing, else
+  marked -> steady.
+- When the END wait ends because playback stopped, the idle loop shows the tag steady or blank
+  from MARK_RAM +28 = ISMARKED after the START commit (stored by the START press and PADW), since
+  the idle task can't call the getters.
+- Open: a freshly recorded sample whose END isn't exactly param 42 (post-sampling init sets END
+  through 0x1C31EC from its own computation) would show MARK; check on hardware.
