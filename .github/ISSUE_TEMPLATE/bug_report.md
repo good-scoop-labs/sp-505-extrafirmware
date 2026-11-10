@@ -11,6 +11,7 @@ labels: bug
 - Mono or stereo:
 - Varispeed / Fine Tune settings:
 - Play Type, Loop, Reverse:
+- Mark button involved? (MARK shown / flashing, which screen):
 
 **What you did** (steps, including other pads or patterns playing)
 

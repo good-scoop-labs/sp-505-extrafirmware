@@ -48,8 +48,24 @@ Other patches: the pad voice allocator (varispeed notes count as several voices)
 parameter setter's entry (BPM rule for Measure / Beat / trim edits, Fine Tune reset on a new
 recording) and the BPM read of the sample header line (repairs copied samples).
 
-Memory used: DRAM `0x428000–0x42A000` (unreferenced by the stock firmware). Flash: free space in
-block 13 (`0x1D0000–0x1DFFFF`), plus a few call sites. Block 14 (the card updater) is never
+The Mark button (`src/mark.py`) lives in the UI task:
+
+1. **Key**: the UI's key dispatcher sends [L/R] (with ZOOM IN / OUT) to one key-class handler;
+   that table entry (`0x12056C`) points to `MARKKEY`. ZOOM keys and [L/R] on the screens that use
+   it (WAVE EDIT, the waveform sample screens) go on to the stock handler.
+2. **Mark**: START / END come from the playing voice's position (voice record `+24`) and are set
+   with WAVE EDIT's own commit routines (Measure / BPM recalculated). The END press then puts a
+   note-on straight into the audio task's ring (`0x1B3394`); the stock note-on replaces the
+   playing note, so playback restarts from the new START.
+3. **Display**: the PATTERN PLAY / SONG PLAY screens' enter and draw slots and the pad key-class
+   entry are wrapped to draw the MARK tag after the stock drawing. "Marked" = START or END not at
+   the recording's edges (params 37 / 42).
+4. **Idle task**: its endless loop jumps to `MIDLE`, which flashes the tag (rewriting its
+   framebuffer bytes, no LCD calls) and ends the "END due" state when the sample stops.
+
+Memory used: DRAM `0x428000–0x42A000` (unreferenced by the stock firmware; the Mark state is at
+`0x429E00`). Flash: free space in block 13 (`0x1D0000–0x1DFFFF`; Mark code at `0x1D6000`), plus a
+few call sites and table entries. Block 14 (the card updater) is never
 touched. `src/layout.py` lists every address; `docs/DEV_NOTES.md` has the reasoning behind them.
 
 ## Building

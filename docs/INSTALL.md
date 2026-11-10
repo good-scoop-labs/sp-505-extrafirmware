@@ -80,8 +80,10 @@ Hold **EXIT + ENTER** while turning the power on. The checksum screen should sho
 FA86B012.)
 
 Then open a sample's parameter menu (where Level, Panpot, Play Type, Measure and Beat are):
-there are two new rows at the bottom, **Varispeed** and **Fine Tune**. See the
-[user guide](USER_GUIDE.md).
+there are two new rows at the bottom, **Varispeed** and **Fine Tune**.
+
+To check the Mark button, go to PATTERN PLAY, hit a pad and press **[L/R]** while it plays:
+**MARK** flashes at the right end of the PAD BANK line. See the [user guide](USER_GUIDE.md).
 
 ## Going back to the stock firmware
 
@@ -91,6 +93,9 @@ The version screen then shows version 1.02, SYS checksum `FA86B012`.
 Your samples keep their Varispeed / Fine Tune values in otherwise unused bytes. The stock
 firmware ignores them and plays every sample at normal speed. They come back into effect if you
 install EXTRAfirmware again. Sample BPM values that varispeed changed stay as they are.
+
+Start and end points set with the Mark button are the samples' normal START / END (the ones WAVE
+EDIT shows), so they stay as they are with the stock firmware.
 
 ## Updating to a newer EXTRAfirmware release
 

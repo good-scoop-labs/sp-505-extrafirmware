@@ -21,6 +21,24 @@ what you were playing.
 - Is the setting really non-zero in **this** sample's menu?
 - Check the version screen (hold EXIT + ENTER at power-on): it should show version `2.10` and SYS checksum `FA9FB0F6`.
 
+## [L/R] doesn't mark
+
+- Marks are for the **last pad you pressed**, and setting START or END needs that sample to be
+  **playing** (a Gate pad stops when you let go).
+- In WAVE EDIT and on the sample screens with a waveform, [L/R] keeps its normal job (hold it with
+  ZOOM IN / OUT for the vertical zoom) and doesn't mark.
+- "Protected!": the bank is protected (the preset banks always are). Reverse samples aren't marked.
+- Press too close to the end: START and END must be at least about 70 ms apart, as in WAVE EDIT.
+- The sample keeps playing its old range after the first press: only the second press (END)
+  restarts it; the first one (START) applies from the next hit.
+
+## MARK shows on a sample I didn't mark
+
+MARK (steady) means the sample's START or END isn't at the edge of the recording, however that
+happened: WAVE EDIT, a CLIPBOARD copy of a trimmed sample, or a START you set before the sample
+stopped. Pressing [L/R] then clears START and END back to the whole sample (also a WAVE EDIT
+trim).
+
 ## The menu or effect switching is slower while varispeed loops play
 
 Expected: varispeed runs inside the audio interrupt, which always comes first, so the screen,
