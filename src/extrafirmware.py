@@ -17,7 +17,7 @@ import sp505fw as fw
 import layout as L
 import menu, engine, voices, bpm, mark
 
-SYSTEM_VERSION = b'2.1g'            # shown on the EXIT+ENTER screen, exactly 4 characters
+SYSTEM_VERSION = b'2.10'            # shown on the EXIT+ENTER screen, exactly 4 characters
 VERSION = b'EXT Ver.' + SYSTEM_VERSION     # internal test screen text, 12 characters
 assert len(SYSTEM_VERSION) == 4
 

@@ -1,7 +1,8 @@
 # User guide
 
 Everything the stock SP-505 does still works the same. EXTRAfirmware adds two settings per sample
-and changes a few behaviours when they're in use.
+(and changes a few behaviours when they're in use), and a Mark button on [L/R] (see
+[Mark button](#mark-button-lr)).
 
 ## The new settings
 

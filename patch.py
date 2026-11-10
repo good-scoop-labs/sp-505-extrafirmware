@@ -14,11 +14,11 @@ import sys, os, hashlib, argparse
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, 'src')); sys.path.insert(0, os.path.join(HERE, 'src', 'tools'))
 
-RELEASE = '2.0.0'
-VERSION_SCREEN = '2.00'
+RELEASE = '2.10'
+VERSION_SCREEN = '2.10'
 INPUT_MD5 = '20bb3983ec3144793deefd34075e7e58'      # official v1.02 sp505.prg
-OUTPUT_MD5 = '38091b30cf86dc1780655bf73eb69e2c'     # result of this release
-CHECKSUM = 'FA9AD007'                                # SYS checksum on the version screen
+OUTPUT_MD5 = 'aa81955a4f373d1128c5c466f922ae7a'     # result of this release
+CHECKSUM = 'FA9FB0F6'                                # SYS checksum on the version screen
 
 
 def md5(path):

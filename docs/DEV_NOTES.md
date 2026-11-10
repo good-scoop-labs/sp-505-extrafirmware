@@ -927,3 +927,8 @@ sample's start / end, also when set in WAVE EDIT (otherwise the display is misle
   the idle task can't call the getters.
 - Open: a freshly recorded sample whose END isn't exactly param 42 (post-sampling init sets END
   through 0x1C31EC from its own computation) would show MARK; check on hardware.
+
+## Release 2.10
+Test build 2.1g confirmed on hardware; released as 2.10 (version string only differs from 2.1g):
+version screen 2.10, SYS checksum FA9FB0F6, output MD5 aa81955a4f373d1128c5c466f922ae7a. From
+this release on, releases are named like the version screen ("2.10", "2.20", ...).

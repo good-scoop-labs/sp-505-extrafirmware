@@ -2,15 +2,18 @@
 
 **SP-505 EXTRAfirmware** is custom system firmware for the **BOSS SP-505** sampler. It adds
 tape-style **varispeed** to every sample: pitch and speed change together, like slowing down or
-speeding up a turntable or tape. The setting is saved with the sample.
+speeding up a turntable or tape. The setting is saved with the sample. It also turns the
+**[L/R]** button into an SP-303-style **Mark** button.
 
 - **Varispeed**: −24 to +12 semitones per sample, with 0 (no change) in the middle
 - **Fine Tune**: −50 to +50 cents on top of Varispeed
 - **BPM follows**: the sample's BPM is recalculated as you turn either knob
+- **Mark button**: while a sample plays, press [L/R] to set its start, again to set its end (it
+  loops back at once); press it on a marked sample to clear. The play screens show MARK
 - Samples with Varispeed and Fine Tune at 0 play exactly as with the stock firmware
 - Built on the official v1.02 system program; every stock feature stays
 
-> **Current release: 2.0.0** (version screen: version `2.00`, SYS checksum `FA9AD007`).
+> **Current release: 2.10** (version screen: version `2.10`, SYS checksum `FA9FB0F6`).
 > See [CHANGELOG.md](CHANGELOG.md).
 
 ## How it is distributed

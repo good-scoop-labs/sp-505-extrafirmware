@@ -7,7 +7,7 @@ recomputed checksums), plus SHA-256 hashes of the official input and of the expe
 No BOSS/Roland bytes are included.
 
 usage: make_web_patch.py official.prg extrafirmware.prg docs/extrafirmware-patch.js RELEASE VERSION CHECKSUM
-e.g.   make_web_patch.py official/sp505.prg out/sp505.prg docs/extrafirmware-patch.js 2.0.0 2.00 FA9AD007
+e.g.   make_web_patch.py official/sp505.prg out/sp505.prg docs/extrafirmware-patch.js 2.10 2.10 FA9FB0F6
 """
 import sys, hashlib, base64, json
 

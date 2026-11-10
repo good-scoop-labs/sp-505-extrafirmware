@@ -38,9 +38,9 @@ python3 patch.py path/to/official/sp505.prg
 You should see:
 
 ```
-SP-505 EXTRAfirmware 2.0.0 written to out/sp505.prg
+SP-505 EXTRAfirmware 2.10 written to out/sp505.prg
 After updating, the version screen (hold EXIT + ENTER at power-on) shows
-    version 2.00, SYS checksum FA9AD007
+    version 2.10, SYS checksum FA9FB0F6
 ```
 
 If it says the input isn't the official v1.02 file, you have a different file (another version,
@@ -76,7 +76,7 @@ Good to know:
 ## 5. Check the installation
 
 Hold **EXIT + ENTER** while turning the power on. The checksum screen should show version
-**2.00** and, on the `SYS` line, checksum **FA9AD007**. (The stock firmware shows 1.02 and
+**2.10** and, on the `SYS` line, checksum **FA9FB0F6**. (The stock firmware shows 1.02 and
 FA86B012.)
 
 Then open a sample's parameter menu (where Level, Panpot, Play Type, Measure and Beat are):

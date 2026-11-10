@@ -106,7 +106,8 @@ lockstep; use it to prove an optimisation changes nothing), `unity_vs_rom.py`.
 ## Making a release
 
 1. Make the change in the module it belongs to (addresses go in `src/layout.py`).
-2. Set `SYSTEM_VERSION` in `src/extrafirmware.py` (exactly 4 characters, e.g. `b'2.01'`). It's
+2. Set `SYSTEM_VERSION` in `src/extrafirmware.py` (exactly 4 characters, e.g. `b'2.20'`). The
+   release is named the same as this version-screen string (`2.10`, `2.20`, ...). It's
    written into the image header (shown on the EXIT + ENTER screen and by the card updater) and
    into the `EXT Ver.` text of an internal test screen.
 3. Build it (`python3 src/extrafirmware.py ...` prints the version-screen checksum), run `regress.sh`,
@@ -114,11 +115,12 @@ lockstep; use it to prove an optimisation changes nothing), `unity_vs_rom.py`.
    shouldn't alter the sound), and test on hardware.
 4. In `patch.py` update `RELEASE`, `VERSION_SCREEN`, `OUTPUT_MD5` and `CHECKSUM`.
 5. Regenerate the web patcher data:
-   `python3 src/tools/make_web_patch.py official/sp505.prg out/sp505.prg docs/extrafirmware-patch.js X.Y.Z 2.01 CHECKSUM`
+   `python3 src/tools/make_web_patch.py official/sp505.prg out/sp505.prg docs/extrafirmware-patch.js 2.20 2.20 CHECKSUM`
+   and check it with `python3 src/tools/check_web_patch.py official/sp505.prg`.
    It stores only the changed bytes and the SHA-256 of the official input and of the result.
 6. Update `CHANGELOG.md`, the README's "Current release" line and the user docs (version string
    and checksum appear in INSTALL and TROUBLESHOOTING).
-7. Commit, tag `vX.Y.Z`, and create a GitHub release from the tag with the changelog entry as the
+7. Commit, tag `v2.20` (the release name), and create a GitHub release from the tag with the changelog entry as the
    notes. Don't attach `.prg` files.
 
 ## Web patcher / GitHub Pages

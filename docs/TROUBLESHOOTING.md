@@ -19,7 +19,7 @@ what you were playing.
 - Is Reverse on? Reverse playback ignores varispeed.
 - Was the sample already playing? Changes apply from the next trigger.
 - Is the setting really non-zero in **this** sample's menu?
-- Check the version screen (hold EXIT + ENTER at power-on): it should show version `2.00` and SYS checksum `FA9AD007`.
+- Check the version screen (hold EXIT + ENTER at power-on): it should show version `2.10` and SYS checksum `FA9FB0F6`.
 
 ## The menu or effect switching is slower while varispeed loops play
 

@@ -1,11 +1,13 @@
 # Changelog
 
-Versions follow [semantic versioning](https://semver.org/). The SP-505's version screen (hold
-EXIT + ENTER at power-on) shows the version and SYS checksum listed for each release.
+Releases are numbered like the SP-505's own system versions: `2.10`, `2.20`, ... (the first
+release was numbered 2.0.0). The SP-505's version screen (hold EXIT + ENTER at power-on) shows
+the version and SYS checksum listed for each release.
 
-## Unreleased (test build `2.1g`)
+## 2.10 (2026-11-09)
 
-Version screen: version `2.1g`, SYS checksum `FA9FB088`. Not yet tested on hardware.
+Version screen: version `2.10`, SYS checksum `FA9FB0F6`. Built from the official v1.02 system
+program.
 
 ### Added
 - **Mark button** on [L/R], like the Mark button of an SP-303: while the last pressed pad's sample
@@ -15,10 +17,16 @@ Version screen: version `2.1g`, SYS checksum `FA9FB088`. Not yet tested on hardw
   marked sample clears the marks (START / END back to the whole sample).
 - The PATTERN PLAY and SONG PLAY screens show **MARK**, steady whenever the sample's START or END
   differs from the whole recording (however it was set, WAVE EDIT included; [L/R] then clears it)
-  and flashing
-  while the END is still to be set (it stops flashing when the sample stops before the END), like the SP-303's Mark button (the SP-505 has no light in the
-  [L/R] button).
+  and flashing while the END is still to be set (it stops flashing when the sample stops before
+  the END), like the SP-303's Mark button (the SP-505 has no light in the [L/R] button).
 - [L/R] keeps its vertical-zoom function in WAVE EDIT and on the sample screens with a waveform.
+
+### Notes
+- Varispeed and everything else from 2.0.0 is unchanged; normal playback is identical.
+- The restart at the END press happens inside the SP-505: it isn't sent to MIDI OUT and isn't
+  recorded into a pattern.
+
+Development history (test builds 2.1a–2.1g) is in [docs/DEV_NOTES.md](docs/DEV_NOTES.md).
 
 ## 2.0.0 (2026-10-29)
 
